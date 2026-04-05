@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Juego Asteroids</title>
+</head>
+<body>
+
+  <canvas id="lienzo" width="640" height="480"></canvas>
+
+  <script>
+
+    const lienzo = document.getElementById('lienzo');
+    const ctx = lienzo.getContext('2d');
+    const ANCHO = 640, ALTO = 480;
+
+    const teclas = new Set();
+    window.addEventListener('keydown', e => teclas.add(e.code));
+    window.addEventListener('keyup',   e => teclas.delete(e.code));
+
+    const nave ={x: ANCHO/2, y: ALTO/2, angulo: 0};
+
+    function actualizar(dt){
+      if(teclas.has('KeyA')) nave.angulo -= 2 * dt;
+      if(teclas.has('KeyD')) nave.angulo += 2 * dt;
+    }
+
+    function dibujar(){
+      ctx.fillStyle = '#000';
+      ctx.fillRect(0, 0, ANCHO, ALTO);
+
+      ctx.save();
+      ctx.translate(nave.x, nave.y);
+      ctx.rotate(nave.angulo);
+      ctx.strokeStyle = '#fff';
+      ctx.beginPath();
+      ctx.moveTo(15, 0);
+      ctx.lineTo(-10, -9);
+      ctx.lineTo(-10, 9);
+      ctx.closePath();
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    let ultimo = performance.now();
+
+    function bucle(ahora){
+      const dt = (ahora - ultimo)/1000;
+      ultimo = ahora;
+      actualizar(dt);
+      dibujar();
+      requestAnimationFrame(bucle);
+    }
+
+    requestAnimationFrame(bucle);
+
+  </script>
+  </body>
+</html>
