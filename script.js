@@ -1,4 +1,4 @@
-class InputHandler{
+class Input{
   constructor(){
     this._sostenidas = new Set();
     this._recienPresionadas = new Set();
@@ -37,12 +37,12 @@ class Bullet{
 
     const VELOCIDAD = 380;
 
-    this.vx = Math.cos(angulo) * VELOCIDAD + vxNave * 0.5;
-    this.vy = Math.sin(angulo) * VELOCIDAD + vyNave * 0.5;
+    this.vx = Math.cos(angulo) * VELOCIDAD + vxNave;
+    this.vy = Math.sin(angulo) * VELOCIDAD + vyNave;
 
-    this.vida = 0.8;
+    this.vida = 1;
 
-    this.radio = 3;
+    this.radio = 2;
   }
 
   update(dt){
@@ -83,12 +83,11 @@ class Ship{
     this.EMPUJE = 200;
     this.VEL_MAX = 250;
     this.FRICCION = 0.98;
-    this.radio = 10;
     this.viva = true;
     this.empujando = false;
 
     this.cooldown = 0;
-    this.COOLDOWN_MAX = 0.18;
+    this.COOLDOWN_MAX = 0.2;
   }
 
   disparar(){
@@ -154,22 +153,22 @@ class Ship{
 }
 
 class Asteroid{
-  constructor(x, y, tamano, ancho, alto, vx = null, vy = null){
+  constructor(x, y, tam, ancho, alto, vx = null, vy = null){
     this.x = x;
     this.y = y;
-    this.tamano = tamano;
+    this.tam = tam;
     this.ancho = ancho;
     this.alto = alto;
 
-    const radios = { 3: 44, 2: 26, 1: 14 };
-    this.radio = radios[tamano];
+    const radios = {3: 44, 2: 26, 1: 14};
+    this.radio = radios[tam];
 
     if(vx !== null && vy !== null){
       this.vx = vx;
       this.vy = vy;
     }else{
-      const velocidades = { 3: 40, 2: 70, 1: 110 };
-      const vel = velocidades[tamano];
+      const velocidades = {3: 40, 2: 70, 1: 110};
+      const vel = velocidades[tam];
       const angulo = Math.random() * Math.PI * 2;
       this.vx = Math.cos(angulo) * vel;
       this.vy = Math.sin(angulo) * vel;
@@ -177,9 +176,9 @@ class Asteroid{
 
     this.angulo = Math.random() * Math.PI * 2;
     const spinMax = { 3: 0.4, 2: 0.7, 1: 1.2 };
-    this.spin = (Math.random() - 0.5) * 2 * spinMax[tamano];
+    this.spin = Math.random() + spinMax[tam];
 
-    const numPuntos = 9 + Math.floor(Math.random() * 4);
+    const numPuntos = 8 + Math.floor(Math.random() * 5);
     this.forma = Array.from(
       { length: numPuntos },
       () => 0.7 + Math.random() * 0.6
@@ -194,7 +193,7 @@ class Asteroid{
     const M = this.radio;
     if(this.x < -M) this.x = this.ancho + M;
     if(this.x > this.ancho + M) this.x = -M;
-    if(this.y < -M) this.y = this.alto  + M;
+    if(this.y < -M) this.y = this.alto + M;
     if(this.y > this.alto  + M) this.y = -M;
   }
 
@@ -204,7 +203,7 @@ class Asteroid{
     ctx.rotate(this.angulo);
 
     const colores = { 3: '#8af', 2: '#adf', 1: '#cff' };
-    ctx.strokeStyle = colores[this.tamano];
+    ctx.strokeStyle = colores[this.tam];
     ctx.lineWidth = 1.5;
 
     ctx.beginPath();
@@ -214,7 +213,7 @@ class Asteroid{
       const px = Math.cos(a) * r;
       const py = Math.sin(a) * r;
       if(i === 0) ctx.moveTo(px, py);
-      else         ctx.lineTo(px, py);
+      else ctx.lineTo(px, py);
     });
     ctx.closePath();
     ctx.stroke();
@@ -229,7 +228,7 @@ class Game{
     this.ancho = this.canvas.width;
     this.alto = this.canvas.height;
 
-    this.input = new InputHandler();
+    this.input = new Input();
     this.ship = new Ship(this.ancho, this.alto);
     this.asteroides = [];
     this.balas = [];
@@ -246,7 +245,7 @@ class Game{
       do{
         x = Math.random() * this.ancho;
         y = Math.random() * this.alto;
-      }while(Math.hypot(x - this.ancho / 2, y - this.alto  / 2) < 120);
+      }while(Math.hypot(x - this.ancho / 2, y - this.alto / 2) < 120);
 
       this.asteroides.push(
         new Asteroid(x, y, 3, this.ancho, this.alto)
@@ -274,9 +273,7 @@ class Game{
     ctx.fillRect(0, 0, this.ancho, this.alto);
 
     this.asteroides.forEach(a => a.draw(ctx));
-
     this.balas.forEach(b => b.draw(ctx));
-
     this.ship.draw(ctx);
   }
 
