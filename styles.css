@@ -1,0 +1,28 @@
+body{
+  margin: 0;
+  background: black;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+canvas{
+  border: 2px solid #1a3a5c;
+}
+
+button{
+  margin-top: 15px;
+  padding: 10px 20px;
+  background: white;
+  color: black;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+button:hover{
+  background: gray;
+  color: white;
+}

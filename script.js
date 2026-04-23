@@ -154,7 +154,6 @@ class Ship{
   }
 
   draw(ctx){
-    ////ctx.save();
     ctx.save();
     ctx.translate(this.x, this.y);
     ctx.rotate(this.angulo);
