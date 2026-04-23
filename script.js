@@ -1,41 +1,41 @@
-class Input {
-  constructor() {
+class Input{
+  constructor(){
     this._sostenidas = new Set();
     this._recienPresionadas = new Set();
 
-    window.addEventListener('keydown', (e) => {
+    window.addEventListener('keydown',(e) =>{
       this._sostenidas.add(e.code);
       this._recienPresionadas.add(e.code);
-      if (['Space'].includes(e.code)) {
+      if(['Space'].includes(e.code)){
         e.preventDefault();
       }
     });
 
-    window.addEventListener('keyup', (e) => {
+    window.addEventListener('keyup',(e) =>{
       this._sostenidas.delete(e.code);
     });
 
-    window.addEventListener('blur', () => {
+    window.addEventListener('blur',() =>{
       this._sostenidas.clear();
       this._recienPresionadas.clear();
     });
   }
 
-  sostenida(codigo) {
+  sostenida(codigo){
     return this._sostenidas.has(codigo);
   }
 
-  pulsada(codigo) {
+  pulsada(codigo){
     return this._recienPresionadas.has(codigo);
   }
 
-  limpiar() {
+  limpiar(){
     this._recienPresionadas.clear();
   }
 }
 
-class Bullet {
-  constructor(x, y, angulo, vxNave, vyNave) {
+class Bullet{
+  constructor(x, y, angulo, vxNave, vyNave){
 
     this.x = x;
     this.y = y;
@@ -50,17 +50,17 @@ class Bullet {
     this.radio = 2;
   }
 
-  update(dt) {
+  update(dt){
     this.x += this.vx * dt;
     this.y += this.vy * dt;
     this.vida -= dt;
   }
 
-  get estaMuerta() {
+  get estaMuerta(){
     return this.vida <= 0;
   }
 
-  draw(ctx) {
+  draw(ctx){
     const alpha = Math.min(this.vida / 0.3, 1);
 
     ctx.save();
@@ -75,43 +75,8 @@ class Bullet {
   }
 }
 
-class Particle {
-  constructor(x, y, angulo, velocidad, vida, color) {
-    this.x = x;
-    this.y = y;
-    this.vx = Math.cos(angulo) * velocidad;
-    this.vy = Math.sin(angulo) * velocidad;
-    this.vida = vida;
-    this.vidaMax = vida;
-    this.color = color;
-    this.tamano = 1 + Math.random() * 1.5;
-  }
-
-  update(dt) {
-    this.x += this.vx * dt;
-    this.y += this.vy * dt;
-    this.vx *= 0.97;
-    this.vy *= 0.97;
-    this.vida -= dt;
-  }
-
-  get estaMuerta() { return this.vida <= 0; }
-
-  draw(ctx) {
-    ctx.save();
-    ctx.globalAlpha = this.vida / this.vidaMax;
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.tamano, 0, Math.PI * 2);
-    ctx.fillStyle = this.color;
-    ctx.shadowColor = this.color;
-    ctx.shadowBlur = 4;
-    ctx.fill();
-    ctx.restore();
-  }
-}
-
-class Ship {
-  constructor(ancho, alto) {
+class Ship{
+  constructor(ancho, alto){
     this.ancho = ancho;
     this.alto = alto;
     this.x = ancho / 2;
@@ -133,8 +98,8 @@ class Ship {
     this.radio = 10;
   }
 
-  disparar() {
-    if (this.cooldown > 0) return null;
+  disparar(){
+    if(this.cooldown > 0) return null;
 
     this.cooldown = this.COOLDOWN_MAX;
 
@@ -144,25 +109,24 @@ class Ship {
     return new Bullet(puntoX, puntoY, this.angulo, this.vx, this.vy);
   }
 
-  respawn() {
+  respawn(){
     this.x = this.ancho / 2;
     this.y = this.alto / 2;
     this.vx = 0;
     this.vy = 0;
     this.angulo = -Math.PI / 2;
     this.viva = true;
-    this.invulnerable = 2.0;
   }
 
-  update(dt, input) {
-    if (!this.viva) return;
-    if (input.sostenida('KeyA'))
+  update(dt, input){
+    if(!this.viva) return;
+    if(input.sostenida('KeyA'))
       this.angulo -= this.VEL_ROTACION * dt;
-    if (input.sostenida('KeyD'))
+    if(input.sostenida('KeyD'))
       this.angulo += this.VEL_ROTACION * dt;
 
     this.empujando = input.sostenida('KeyW');
-    if (this.empujando) {
+    if(this.empujando){
       this.vx += Math.cos(this.angulo) * this.EMPUJE * dt;
       this.vy += Math.sin(this.angulo) * this.EMPUJE * dt;
     }
@@ -171,31 +135,26 @@ class Ship {
     this.vy *= this.FRICCION;
 
     const spd = Math.hypot(this.vx, this.vy);
-    if (spd > this.VEL_MAX) {
-      this.vx = (this.vx / spd) * this.VEL_MAX;
-      this.vy = (this.vy / spd) * this.VEL_MAX;
+    if(spd > this.VEL_MAX){
+      this.vx =(this.vx / spd) * this.VEL_MAX;
+      this.vy =(this.vy / spd) * this.VEL_MAX;
     }
 
     this.x += this.vx * dt;
     this.y += this.vy * dt;
 
     const M = 20;
-    if (this.x < -M) this.x = this.ancho + M;
-    if (this.x > this.ancho + M) this.x = -M;
-    if (this.y < -M) this.y = this.alto + M;
-    if (this.y > this.alto + M) this.y = -M;
+    if(this.x < -M) this.x = this.ancho + M;
+    if(this.x > this.ancho + M) this.x = -M;
+    if(this.y < -M) this.y = this.alto + M;
+    if(this.y > this.alto + M) this.y = -M;
 
     this.cooldown = Math.max(0, this.cooldown - dt);
 
-    if (this.invulnerable > 0) {
-      this.invulnerable = Math.max(0, this.invulnerable - dt);
-    }
   }
 
-  draw(ctx) {
-    //ctx.save();
-    if (!this.viva) return;
-    if (this.invulnerable > 0 && Math.floor(this.invulnerable / 0.1) % 2 === 0) return;
+  draw(ctx){
+    ////ctx.save();
     ctx.save();
     ctx.translate(this.x, this.y);
     ctx.rotate(this.angulo);
@@ -227,22 +186,22 @@ class Ship {
   }
 }
 
-class Asteroid {
-  constructor(x, y, tam, ancho, alto, vx = null, vy = null) {
+class Asteroid{
+  constructor(x, y, tam, ancho, alto, vx = null, vy = null){
     this.x = x;
     this.y = y;
     this.tam = tam;
     this.ancho = ancho;
     this.alto = alto;
 
-    const radios = { 3: 44, 2: 26, 1: 14 };
+    const radios ={ 3: 44, 2: 26, 1: 14 };
     this.radio = radios[tam];
 
-    if (vx !== null && vy !== null) {
+    if(vx !== null && vy !== null){
       this.vx = vx;
       this.vy = vy;
-    } else {
-      const velocidades = { 3: 40, 2: 70, 1: 110 };
+    } else{
+      const velocidades ={ 3: 40, 2: 70, 1: 110 };
       const vel = velocidades[tam];
       const angulo = Math.random() * Math.PI * 2;
       this.vx = Math.cos(angulo) * vel;
@@ -250,44 +209,44 @@ class Asteroid {
     }
 
     this.angulo = Math.random() * Math.PI * 2;
-    const spinMax = { 3: 0.4, 2: 0.7, 1: 1.2 };
+    const spinMax ={ 3: 0.4, 2: 0.7, 1: 1.2 };
     this.spin = Math.random() + spinMax[tam];
 
     const numPuntos = 8 + Math.floor(Math.random() * 5);
     this.forma = Array.from(
-      { length: numPuntos },
-      () => 0.7 + Math.random() * 0.6
+     { length: numPuntos },
+     () => 0.7 + Math.random() * 0.6
     );
   }
 
-  update(dt) {
+  update(dt){
     this.x += this.vx * dt;
     this.y += this.vy * dt;
     this.angulo += this.spin * dt;
 
     const M = this.radio;
-    if (this.x < -M) this.x = this.ancho + M;
-    if (this.x > this.ancho + M) this.x = -M;
-    if (this.y < -M) this.y = this.alto + M;
-    if (this.y > this.alto + M) this.y = -M;
+    if(this.x < -M) this.x = this.ancho + M;
+    if(this.x > this.ancho + M) this.x = -M;
+    if(this.y < -M) this.y = this.alto + M;
+    if(this.y > this.alto + M) this.y = -M;
   }
 
-  draw(ctx) {
+  draw(ctx){
     ctx.save();
     ctx.translate(this.x, this.y);
     ctx.rotate(this.angulo);
 
-    const colores = { 3: '#8af', 2: '#adf', 1: '#cff' };
+    const colores ={ 3: '#8af', 2: '#adf', 1: '#cff' };
     ctx.strokeStyle = colores[this.tam];
     ctx.lineWidth = 1.5;
 
     ctx.beginPath();
-    this.forma.forEach((factor, i) => {
-      const a = (i / this.forma.length) * Math.PI * 2;
+    this.forma.forEach((factor, i) =>{
+      const a =(i / this.forma.length) * Math.PI * 2;
       const r = this.radio * factor;
       const px = Math.cos(a) * r;
       const py = Math.sin(a) * r;
-      if (i === 0) ctx.moveTo(px, py);
+      if(i === 0) ctx.moveTo(px, py);
       else ctx.lineTo(px, py);
     });
     ctx.closePath();
@@ -296,8 +255,8 @@ class Asteroid {
   }
 }
 
-class Game {
-  constructor() {
+class Game{
+  constructor(){
     this.canvas = document.getElementById('lienzo');
     this.ctx = this.canvas.getContext('2d');
     this.ancho = this.canvas.width;
@@ -308,7 +267,6 @@ class Game {
     this.asteroides = [];
     this.balas = [];
 
-    this.particulas = [];
     this.score = 0;
     this.vidas = 3;
     this.gameOver = false;
@@ -321,13 +279,13 @@ class Game {
     this.loop(performance.now());
   }
 
-  spawnAsteroides(cantidad) {
-    for (let i = 0; i < cantidad; i++) {
+  spawnAsteroides(cantidad){
+    for(let i = 0; i < cantidad; i++){
       let x, y;
-      do {
+      do{
         x = Math.random() * this.ancho;
         y = Math.random() * this.alto;
-      } while (Math.hypot(x - this.ancho / 2, y - this.alto / 2) < 120);
+      } while(Math.hypot(x - this.ancho / 2, y - this.alto / 2) < 120);
 
       this.asteroides.push(
         new Asteroid(x, y, 3, this.ancho, this.alto)
@@ -335,17 +293,16 @@ class Game {
     }
   }
 
-  explosion(x, y, cantidad, color) {
-    for (let i = 0; i < cantidad; i++) {
+  explosion(x, y, cantidad, color){
+    for(let i = 0; i < cantidad; i++){
       const angulo = Math.random() * Math.PI * 2;
       const vel = 40 + Math.random() * 120;
       const vida = 0.4 + Math.random() * 0.5;
-      this.particulas.push(new Particle(x, y, angulo, vel, vida, color));
     }
   }
 
-  splitAsteroide(a) {
-    if (a.tam <= 1) return;
+  splitAsteroide(a){
+    if(a.tam <= 1) return;
     const velPadre = Math.hypot(a.vx, a.vy);
     const nx = a.vx / velPadre;
     const ny = a.vy / velPadre;
@@ -359,25 +316,25 @@ class Game {
       -py * velHijo + ny * velHijo * 0.3));
   }
 
-  mataNave() {
+  mataNave(){
     this.explosion(this.ship.x, this.ship.y, 25, '#7ef');
     this.ship.viva = false;
     this.vidas--;
-    if (this.vidas <= 0) {
+    if(this.vidas <= 0){
       this.gameOver = true;
-    } else {
-      setTimeout(() => this.ship.respawn(), 1500);
+    } else{
+      setTimeout(() => this.ship.respawn(), 0);
     }
   }
 
-  update(dt) {
-    if (this.gameOver) return;
+  update(dt){
+    if(this.gameOver) return;
 
     this.ship.update(dt, this.input);
 
-    if (this.input.sostenida('Space')) {
+    if(this.input.sostenida('Space')){
       const bala = this.ship.disparar();
-      if (bala) this.balas.push(bala);
+      if(bala) this.balas.push(bala);
     }
 
     this.balas.forEach(b => b.update(dt));
@@ -385,48 +342,45 @@ class Game {
 
     this.asteroides.forEach(a => a.update(dt));
 
-    this.particulas.forEach(p => p.update(dt));
-    this.particulas = this.particulas.filter(p => !p.estaMuerta);
-
     const balasVivas = [];
-    for (const b of this.balas) {
+    for(const b of this.balas){
       let impacto = false;
-      for (let i = this.asteroides.length - 1; i >= 0; i--) {
+      for(let i = this.asteroides.length - 1; i >= 0; i--){
         const a = this.asteroides[i];
-        if (Math.hypot(b.x - a.x, b.y - a.y) < a.radio) {
+        if(Math.hypot(b.x - a.x, b.y - a.y) < a.radio){
           this.asteroides.splice(i, 1);
           this.splitAsteroide(a);
-          const colores = { 3: '#8af', 2: '#adf', 1: '#cff' };
+          const colores ={ 3: '#8af', 2: '#adf', 1: '#cff' };
           this.explosion(a.x, a.y, a.tam * 5, colores[a.tam]);
-          const puntos = { 3: 20, 2: 50, 1: 100 };
+          const puntos ={ 3: 20, 2: 50, 1: 100 };
           this.score += puntos[a.tam];
           impacto = true;
           break;
         }
       }
-      if (!impacto) balasVivas.push(b);
+      if(!impacto) balasVivas.push(b);
     }
     this.balas = balasVivas;
 
-    if (this.ship.viva && this.ship.invulnerable === 0) {
-      for (const a of this.asteroides) {
-        if (Math.hypot(this.ship.x - a.x, this.ship.y - a.y) < a.radio + this.ship.radio) {
+    if(this.ship.viva && this.ship.invulnerable === 0){
+      for(const a of this.asteroides){
+        if(Math.hypot(this.ship.x - a.x, this.ship.y - a.y) < a.radio + this.ship.radio){
           this.mataNave();
           break;
         }
       }
     }
 
-    if (this.asteroides.length === 0 && !this.spawneando) {
+    if(this.asteroides.length === 0 && !this.spawneando){
       this.spawneando = true;
-      setTimeout(() => {
+      setTimeout(() =>{
         this.spawnAsteroides(3);
         this.spawneando = false;
       }, 1200);
     }
   }
 
-  draw() {
+  draw(){
     const ctx = this.ctx;
 
     ctx.fillStyle = '#000';
@@ -434,7 +388,6 @@ class Game {
 
     this.asteroides.forEach(a => a.draw(ctx));
     this.balas.forEach(b => b.draw(ctx));
-    this.particulas.forEach(p => p.draw(ctx));
     this.ship.draw(ctx);
 
     ctx.save();
@@ -442,29 +395,29 @@ class Game {
     ctx.fillStyle = '#aef';
     ctx.shadowColor = '#0af';
     ctx.shadowBlur = 8;
-    ctx.fillText('SCORE: ' + String(this.score).padStart(6, '0'), 12, 24);
-    for (let i = 0; i < this.vidas; i++) {
-      const ox = 12 + i * 22, oy = 36;
+    ctx.fillText('Puntos: ' + String(this.score).padStart(1, '0'), 12, 24);
+    for(let i = 0; i < this.vidas; i++){
+      const px = 12 + i * 22, py = 36;
       ctx.beginPath();
-      ctx.moveTo(ox + 8, oy);
-      ctx.lineTo(ox, oy + 14);
-      ctx.lineTo(ox + 16, oy + 14);
+      ctx.moveTo(px + 8, py);
+      ctx.lineTo(px, py + 14);
+      ctx.lineTo(px + 16, py + 14);
       ctx.closePath();
       ctx.strokeStyle = '#7ef';
       ctx.lineWidth = 1.5;
       ctx.stroke();
     }
-    if (this.gameOver) {
+    if(this.gameOver){
       ctx.font = '32px monospace';
       ctx.fillStyle = '#f55';
       ctx.shadowColor = '#f00';
       ctx.shadowBlur = 20;
-      ctx.fillText('GAME OVER', this.ancho / 2 - 90, this.alto / 2);
+      ctx.fillText('PERDISTE', this.ancho / 2 - 90, this.alto / 2);
     }
     ctx.restore();
   }
 
-  loop(now) {
+  loop(now){
     const dt = Math.min((now - this.last) / 1000, 0.05);
     this.last = now;
 
